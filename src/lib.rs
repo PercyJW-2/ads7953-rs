@@ -23,6 +23,10 @@ where
         self.spi
             .transaction(&mut [
                 Operation::Write(&[0x3c, 0x00]),
+            ])
+            .map_err(ADS7953Error::Spi)?;
+        self.spi
+            .transaction(&mut [
                 Operation::Write(&[0x93, 0xC0]),
             ])
             .map_err(ADS7953Error::Spi)?;
@@ -42,10 +46,13 @@ where
     pub fn read_values(&mut self) -> Result<Measurement, ADS7953Error<SPI::Error>> {
         let mut buf = [0; 2];
         self.spi
-            .transaction(&mut [Operation::Transfer(&mut buf, &[0x00, 0x00])])
+            .transaction(&mut [
+                //Operation::Write(&[0x00, 0x00]),
+                Operation::Read(&mut buf),
+            ])
             .map_err(ADS7953Error::Spi)?;
 
-        let res: u16 = ((buf[0] as u16) << 8) & (buf[1] as u16);
+        let res: u16 = ((buf[0] as u16) << 8) | (buf[1] as u16);
 
         Ok(Measurement {
             channel: (res >> 12) as u8,
