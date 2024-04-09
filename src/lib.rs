@@ -36,8 +36,8 @@ where
     pub fn manual_mode(&mut self, channel: u8) -> Result<(), ADS7953Error<SPI::Error>> {
         self.spi
             .transaction(&mut [Operation::Write(&[
-                0x10 & (channel >> 1),
-                0x00 & (channel << 7),
+                0x10 | (channel >> 1),
+                0x00 | (channel << 7),
             ])])
             .map_err(ADS7953Error::Spi)?;
         Ok(())
